@@ -53,9 +53,9 @@ class Messager(commands.Bot):
             await self.get_guild(Serv_id).get_channel(self.channel_announce).send(part2)
             await self.get_guild(Serv_id).get_channel(self.channel_announce).send(part3)
         
-        elif message.content.split(" ")[0]=="ls" :
+        """elif message.content.split(" ")[0]=="ls" :
             if (message.content.split(" ")[1] and int(message.content.split(" ")[1]) > 0 ):
-                await self.get_guild(Serv_id).get_channel(self.channel_announce).send("Tu as demandé le khollomètre de la semaine pour le groupe {}".format(int(message.content.split(" ")[1])))
+                await self.get_guild(Serv_id).get_channel(self.channel_announce).send("Tu as demandé le khollomètre de la semaine pour le groupe {}".format(int(message.content.split(" ")[1])))"""
                 
 if __name__ == "__main__":
     messager = Messager(debug=DEBUG)
