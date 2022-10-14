@@ -13,18 +13,17 @@ Serv_id=883070060070064148 #Id du serveur où on écrit
 Test_id=883633997740126249 #Id salon test
 Annonce_id=939621805113626624 #Id du channel annonce
 
-
 class Messager(commands.Bot):
     def __init__(self, debug):
         intents = discord.Intents.all()
         super().__init__(intents=intents, command_prefix="/")
         
-        self.debug = debug
+        self.debug = True if debug == "True" else False
         self.collo = khollometre.Collometre(debug=self.debug)
         
         # Si on est en debug mode, on fait nos tests dans le channel test
         # et pas annonce
-        if debug:
+        if self.debug:
             self.channel_announce = Test_id
             
         else:
