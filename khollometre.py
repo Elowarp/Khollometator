@@ -9,7 +9,7 @@ class Collometre:
         self.debug = debug
 
         # Définition de l'id de la classe(rôle) à qui on va faire le ping
-        self.classe = classMention
+        self.classMention = classMention
     
         # Récupération des informations depuis le fichier excel
         self.doc=xlrd.open_workbook(file)

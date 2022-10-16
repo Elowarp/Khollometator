@@ -96,8 +96,8 @@ class Messager(commands.Bot):
         messages = message.split("\n")
 
         part1 = "\n".join(messages[:len(messages)//3])
-        part2 = "\n".join(messages[(len(messages)//3)+1:2*(len(messages)//3)])
-        part3 = "\n".join(messages[2*len(messages)//3+1:])
+        part2 = "\n".join(messages[(len(messages)//3):2*(len(messages)//3)])
+        part3 = "\n".join(messages[2*len(messages)//3:])
 
         return (part1, part2, part3)
 
