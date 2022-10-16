@@ -1,19 +1,23 @@
+from calendar import weekday
 from datetime import date, datetime, timedelta
 import xlrd
 
 class Collometre:
 
-    def __init__(self, debug):
+    def __init__(self, classMention="939402771558441000", file="MP2I.xls", debug=True):
         # Défini si on est en production ou non
         self.debug = debug
+
+        # Définition de l'id de la classe(rôle) à qui on va faire le ping
+        self.classe = classMention
     
         # Récupération des informations depuis le fichier excel
-        self.doc=xlrd.open_workbook("Collometre.xls")
+        self.doc=xlrd.open_workbook(file)
         self.colles = self.doc.sheet_by_index(0)
 
         # Zone où se trouvent tout les groupes de kholles
         self.firstGroupCell = (2, 5)
-        self.lastGroupCell = (42, 19)
+        self.lastGroupCell = (self.colles.nrows - 1, self.colles.ncols - 1)
 
         # Les numéros des colonnes qui contiennent les différentes informations
         self.subjectsColumn = 0
@@ -204,13 +208,13 @@ class Collometre:
         
         # Si en mode DEBUG, on ne fait pas de mention à mp2i
         if self.debug:
-            finalMessage = "wsh mp2i, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
+            finalMessage = "wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
                 self._get_current_week()
             )
             
         else:
-            finalMessage = "wsh <@&939402771558441000>, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
-                self._get_current_week()
+            finalMessage = "wsh <@&{}>, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
+                self.classMention, self._get_current_week()
             )
 
         # Triage des kholles selon l'ordre croissant des groupes
@@ -219,8 +223,6 @@ class Collometre:
         # Parcours de tous les groupes déjà triés
         for group, colles in self.khollesByGroup.items():
             currentGroupMessage = "<:e:999621115406205029> **Groupe {}** : \n".format(group)
-
-            initialSize = len(currentGroupMessage)
 
             # Création d'un message pour chaque colle du groupe actuel
             for i in range(len(colles)): 
@@ -256,6 +258,5 @@ class Collometre:
 
 
 if __name__ == "__main__":
-    collometrique = Collometre(debug=True)
-    collometrique._convert_datetime_to_timestamp("Lu 13-14")
+    collometrique = Collometre(file="MPI.xls", debug=True)
     print(collometrique.weeklySummup())
