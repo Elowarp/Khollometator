@@ -13,8 +13,8 @@ DEBUG = os.getenv("DEBUG")
 class Messager(commands.Bot):
     Serv_id=883070060070064148 #Id du serveur où on écrit
     Test_id=883633997740126249 #Id salon test
-    AnnonceMP2I_id=939621805113626624 #Id du channel annonce MP2I
-    AnnonceMPI_id=883104717872435242 #Id du channel annonce MP2I
+    AnnonceMP2I_id=1031209793047761010 #Id du channel annonce MP2I
+    AnnonceMPI_id=1031209511383470160 #Id du channel annonce MP2I
 
     def __init__(self, debug):
         intents = discord.Intents.all()
@@ -23,8 +23,8 @@ class Messager(commands.Bot):
         # Définission du mode debug ou non en fonction du .env
         self.debug = True if debug == "True" else False
 
-        self.khollometreMP2I = khollometre.Collometre(classMention="939402771558441000", file="MP2I.xls", debug=self.debug)
-        self.khollometreMPI = khollometre.Collometre(classMention="939403004698836992", file="MPI.xls", debug=self.debug)
+        self.khollometreMP2I = khollometre.Collometre(classe="MP2I", file="MP2I.xls", debug=self.debug)
+        self.khollometreMPI = khollometre.Collometre(classe="MPI", file="MPI.xls", debug=self.debug)
 
 
     async def on_ready(self):
@@ -47,6 +47,14 @@ class Messager(commands.Bot):
         if "weekannounce" in message.content \
             and message.channel.id == self.Test_id:
             
+            if len(message.content.split(" ")) >= 2:
+                # Récupération de la date précise
+                week = message.content.split(" ")[1]
+
+                # Assignation de la date aux khollomètres pour obtenir les bonnes données
+                self.khollometreMP2I.set_week(week)
+                self.khollometreMPI.set_week(week)
+
             await self.messageMP2I()
             await self.messageMPI()
         
@@ -63,7 +71,7 @@ class Messager(commands.Bot):
         announce_channel = self.Test_id if self.debug else self.AnnonceMP2I_id
 
         # On fait l'annonce dans le channel
-        messages = self.splitMessage(self.khollometreMP2I.weeklySummup())
+        messages = self.khollometreMP2I.weeklySummup()
 
         # On envoie un message pour chaque élément du tuple
         for i in range(len(messages)):
@@ -77,30 +85,11 @@ class Messager(commands.Bot):
         announce_channel = self.Test_id if self.debug else self.AnnonceMPI_id
 
         # On fait l'annonce dans le channel
-        messages = self.splitMessage(self.khollometreMPI.weeklySummup())
+        messages = self.khollometreMPI.weeklySummup()
 
         # On envoie un message pour chaque élément du tuple
         for i in range(len(messages)):
             await self.get_guild(self.Serv_id).get_channel(announce_channel).send(messages[i])
-            
-
-    def splitMessage(self, message):
-        """
-        Decoupe un message donné en plusieurs parties pour pouvoir être envoyé sur discord sans problème.
-
-        Parameter: message(String) - Message à découper
-        Returns: tuple - Tuple contenant les différents messages
-        """
-
-        # Création d'une liste découpée selon les retours chariots
-        messages = message.split("\n")
-
-        part1 = "\n".join(messages[:len(messages)//3])
-        part2 = "\n".join(messages[(len(messages)//3):2*(len(messages)//3)])
-        part3 = "\n".join(messages[2*len(messages)//3:])
-
-        return (part1, part2, part3)
-
 
 if __name__ == "__main__":
     messager = Messager(debug=DEBUG)

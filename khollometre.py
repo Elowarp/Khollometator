@@ -4,12 +4,9 @@ import xlrd
 
 class Collometre:
 
-    def __init__(self, classMention="939402771558441000", file="MP2I.xls", debug=True):
+    def __init__(self, classe="MP2I", file="MP2I.xls", debug=True):
         # Défini si on est en production ou non
         self.debug = debug
-
-        # Définition de l'id de la classe(rôle) à qui on va faire le ping
-        self.classMention = classMention
     
         # Récupération des informations depuis le fichier excel
         self.doc=xlrd.open_workbook(file)
@@ -44,6 +41,47 @@ class Collometre:
         # }
         self.khollesByGroup = {}
 
+        # Variable contenant la classe sur laquelle on travaille
+        self.classe = classe
+
+        # Variable qui contient la semaine sur laquelle on travaille
+        self.week = self._get_current_week()
+
+        # Récupération des id des étudiants et de leurs groupes
+        self.students = self._get_students_id_and_groups_from_xls(file="pings.xls")
+
+    def _get_students_id_and_groups_from_xls(self, file="pings.xls") -> dict:
+        """
+        Fonction qui récupère les groupes et les id des étudiants
+        depuis le fichier excel pings.xls
+
+        Parameters : None
+        Returns : dict - Dictionnaire contenant les groupes et les id des étudiants
+        """
+        # Récupération des informations depuis le fichier excel
+        doc = xlrd.open_workbook(file)
+        tableur = doc.sheet_by_index(0)
+
+        # Stockage des id en fonction du groupe de kholle
+        students = {
+            # groupNumber : [id1, id2, id3, ...],
+        }
+
+        # On parcourt le tableau ligne par ligne
+        for i in range(1, tableur.nrows):
+            # On vérifie si la ligne contient les infos d'un étudiant de la classe
+            # cherchée
+            if str(tableur[i][3].value) == self.classe:
+                groupNumber = int(tableur[i][0].value) # Numéro du groupe
+
+                # Ajout dans le dictionnaire
+                if groupNumber not in students:
+                    students[groupNumber] = []
+
+                students[groupNumber].append(str(tableur[i][2].value))
+
+        return students
+
     def _get_current_week(self) -> int:
         """
         Récupère le lundi de la semaine prochaine et le renvoie sout forme jj-mm
@@ -68,7 +106,15 @@ class Collometre:
         nextMondayString = nextMonday.strftime("%d-%m")
 
         return nextMondayString
-        
+
+    def set_week(self, week):
+        """
+        Permet de changer la semaine sur laquelle on travaille
+
+        Parameters : week (String) : La semaine sous format jj-mm
+        Returns : None
+        """
+        self.week = week   
 
     def _get_column_from_week(self) -> int:
         """
@@ -76,7 +122,7 @@ class Collometre:
         correspondante à cette semaine
         """
 
-        nextMonday = self._get_current_week()
+        nextMonday = self.week
 
         # On a colles[1] car la ligne des dates est la 2nd ligne donc pas 
         # besoin de parcourir tout le tableau
@@ -166,7 +212,7 @@ class Collometre:
 
         # On récupère la date du prochain lundi et on ajoute l'année pour avoir
         # le format : "07-10-2022"
-        nextMonday = self._get_current_week() + "-" + str(datetime.today().year)
+        nextMonday = self.week + "-" + str(datetime.today().year)
         
         # Convertion en format datetime d'un format "07-10-2022"
         nextMondayTimestamp = datetime.strptime(nextMonday, "%d-%m-%Y")
@@ -196,33 +242,37 @@ class Collometre:
         return (int(firstDate), int(secondDate))
 
 
-    def weeklySummup(self) -> str:
+    def weeklySummup(self) -> list:
         """
-        Fonction qui retourne le message à afficher aux élèves
+        Fonction qui retourne le message à afficher aux élèves sous forme de liste
+        de phrases/blocs à afficher
 
         Parameters : None
-        Returns : string
+        Returns : list
         """
         # Mise à jour des informations
         self.main()
         
-        # Si en mode DEBUG, on ne fait pas de mention à mp2i
-        if self.debug:
-            finalMessage = "wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
-                self._get_current_week()
-            )
-            
-        else:
-            finalMessage = "wsh <@&{}>, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n\n".format(
-                self.classMention, self._get_current_week()
-            )
+        finalMessage = ["wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n_ _".format(
+            self.week
+        )]
 
         # Triage des kholles selon l'ordre croissant des groupes
         self.sort_kholles()
 
         # Parcours de tous les groupes déjà triés
         for group, colles in self.khollesByGroup.items():
-            currentGroupMessage = "<:e:999621115406205029> **Groupe {}** : \n".format(group)
+            currentGroupMessage = "<:e:999621115406205029> **Groupe {}** : ".format(group)
+
+            # Ajout des mentions des personnes du groupe sous forme 
+            # "@machin@truc" s'il y a bien des personnes à mentionner
+            if group in self.students and not self.debug:
+                groupTags = "".join(["<@{}>".format(self.students[group][i]) 
+                    for i in range(len(self.students[group]))])
+
+                currentGroupMessage += groupTags 
+
+            currentGroupMessage += "\n"
 
             # Création d'un message pour chaque colle du groupe actuel
             for i in range(len(colles)): 
@@ -230,19 +280,25 @@ class Collometre:
                 currentGroupMessage += "> • "
                 
                 currentGroupMessage += "`{}` : <t:{}:f> en __{}__ avec {}".format(
-                    colles[i]["subject"], self._convert_datetime_to_timestamp(colles[i]["horaries"])[0], colles[i]["class"], 
-                    colles[i]["teacher"])
+                    colles[i]["subject"], self._convert_datetime_to_timestamp(
+                        colles[i]["horaries"])[0], colles[i]["class"], 
+                        colles[i]["teacher"]
+                    )
 
                 # Si c'est une colle de fr, alors il y a des infos sur la lettre
                 # qui passe, donc on peut l'ajouter au message
                 if colles[i]["frGroup"] != None:
                     currentGroupMessage += " pour la lettre {}".format(colles[i]["frGroup"])
 
-                currentGroupMessage += " \n"
+                currentGroupMessage += "\n"
 
-            finalMessage += currentGroupMessage + "\n" # Saut de ligne entre les groupes
+                # Si on est à la dernière colle du groupe, on ajoute un saut de ligne vide
+                if i == len(colles) - 1:
+                    currentGroupMessage += "_ _"
 
-        finalMessage += "⚠️ Coquilles possibles ! *(comme Noyer avec ses transparents)*"
+            finalMessage.append(currentGroupMessage)
+
+        finalMessage.append("⚠️ Coquilles possibles ! *(comme Noyer avec ses transparents)*")
         return finalMessage
 
     def main(self) -> None:
@@ -258,5 +314,6 @@ class Collometre:
 
 
 if __name__ == "__main__":
-    collometrique = Collometre(file="MPI.xls", debug=True)
+    collometrique = Collometre(classe="MP2I", file="MPI.xls", debug=True)
+    collometrique.set_week("07-11")
     print(collometrique.weeklySummup())
