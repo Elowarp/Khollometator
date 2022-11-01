@@ -279,7 +279,7 @@ class Collometre:
                 # Mise en forme, ajout d'un espace au debut du message
                 currentGroupMessage += "> • "
                 
-                currentGroupMessage += "`{}` : <t:{}:f> en __{}__ avec {}".format(
+                currentGroupMessage += "`{}` : <t:{}:F> en __{}__ avec {}".format(
                     colles[i]["subject"], self._convert_datetime_to_timestamp(
                         colles[i]["horaries"])[0], colles[i]["class"], 
                         colles[i]["teacher"]
