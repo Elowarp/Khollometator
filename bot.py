@@ -35,7 +35,7 @@ class Messager(commands.Bot):
         print("Bot is ready, is debug mode ? : {}".format(self.debug))
         status = "https://github.com/Elowarp/Kollometator  by LOGIC & Elowarp"
 
-        if DEBUG:
+        if self.debug:
             status = "DEBUG MODE"
 
         await self.change_presence(activity=discord.Game(name=status))
