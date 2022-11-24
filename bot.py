@@ -33,7 +33,12 @@ class Messager(commands.Bot):
         voulu, sert à debug, on changera après
         """
         print("Bot is ready, is debug mode ? : {}".format(self.debug))
-        await self.change_presence(activity=discord.Game(name="https://github.com/Elowarp/Kollometator  by LOGIC & Elowarp"))
+        status = "https://github.com/Elowarp/Kollometator  by LOGIC & Elowarp"
+
+        if DEBUG:
+            status = "DEBUG MODE"
+
+        await self.change_presence(activity=discord.Game(name=status))
 
 
     async def on_message(self, message):
