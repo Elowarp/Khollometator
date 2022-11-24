@@ -309,6 +309,9 @@ class Collometre:
         Returns : None
         """
         weekColumn = self._get_column_from_week()
+        
+        self.khollesByGroup = {} # Reset des kholles
+
         for line in range(self.firstGroupCell[0], self.lastGroupCell[0]+1):
             self._add_kholle_info_to_group(line, weekColumn)
 
