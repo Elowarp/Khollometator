@@ -149,7 +149,7 @@ class Collometre:
         frGroup = None
 
         # Si on a un saut de ligne dans le fichier
-        if group == "": return
+        if group == "" or group == " ": return
 
         # Distingo entre le nom de groupe "5" et "5 a"
         print(group)
