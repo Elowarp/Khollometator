@@ -152,6 +152,7 @@ class Collometre:
         if group == "": return
 
         # Distingo entre le nom de groupe "5" et "5 a"
+        print(group)
         try:
             # On essaye de convertir "5" en int
             group = int(group)
