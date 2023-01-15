@@ -50,6 +50,16 @@ class Collometre:
         # Récupération des id des étudiants et de leurs groupes
         self.students = self._get_students_id_and_groups_from_xls(file="pings.xls")
 
+    def update_date(self):
+        """
+        Fonction qui met à jour la date de la semaine sur laquelle on travaille
+
+        Parameters : None
+        Returns : None
+        """
+
+        self.week = self._get_current_week()
+
     def _get_students_id_and_groups_from_xls(self, file="pings.xls") -> dict:
         """
         Fonction qui récupère les groupes et les id des étudiants
@@ -71,14 +81,14 @@ class Collometre:
         for i in range(1, tableur.nrows):
             # On vérifie si la ligne contient les infos d'un étudiant de la classe
             # cherchée
-            if str(tableur[i][3].value) == self.classe:
-                groupNumber = int(tableur[i][0].value) # Numéro du groupe
+            if str(tableur.cell_value(i, 3)) == self.classe:
+                groupNumber = int(tableur.cell_value(i, 0)) # Numéro du groupe
 
                 # Ajout dans le dictionnaire
                 if groupNumber not in students:
                     students[groupNumber] = []
 
-                students[groupNumber].append(str(tableur[i][2].value))
+                students[groupNumber].append(str(tableur.cell_value(i, 2)))
 
         return students
 
@@ -124,10 +134,10 @@ class Collometre:
 
         nextMonday = self.week
 
-        # On a colles[1] car la ligne des dates est la 2nd ligne donc pas 
+        # On a (1, ..) car la ligne des dates est la 2nd ligne donc pas 
         # besoin de parcourir tout le tableau
-        for idColonne in range(len(self.colles[1])):
-            if str(self.colles[1][idColonne].value) == nextMonday:
+        for idColonne in range(self.colles.ncols):
+            if str(self.colles.cell_value(1, idColonne)) == nextMonday:
                 return idColonne
 
     def _add_kholle_info_to_group(self, line, weekColumn) -> None:
@@ -140,19 +150,18 @@ class Collometre:
 
         Returns : None
         """
-        subject = str(self.colles[line, self.subjectsColumn].value)
-        teacher = str(self.colles[line, self.teachersColumn].value)
-        infos = str(self.colles[line, self.infosColumn].value)
-        horaries = str(self.colles[line, self.horariesColumn].value)
-        classe = str(self.colles[line, self.classColumn].value)
-        group = self.colles[line, weekColumn].value
-        frGroup = None
+        subject =   str(self.colles.cell_value(line, self.subjectsColumn))
+        teacher =   str(self.colles.cell_value(line, self.teachersColumn))
+        infos =     str(self.colles.cell_value(line, self.infosColumn))
+        horaries =  str(self.colles.cell_value(line, self.horariesColumn))
+        classe =    str(self.colles.cell_value(line, self.classColumn))
+        group =     self.colles.cell_value(line, weekColumn)
+        frGroup =   None
 
         # Si on a un saut de ligne dans le fichier
         if group == "" or group == " ": return
 
         # Distingo entre le nom de groupe "5" et "5 a"
-        print(group)
         try:
             # On essaye de convertir "5" en int
             group = int(group)
@@ -161,7 +170,7 @@ class Collometre:
         # or c'est impossible car illogique
         except ValueError:
             # Donc on découpe le string en deux au niveau de l'espace
-            groupInfo = str(self.colles[line, weekColumn].value).split(" ")
+            groupInfo = str(self.colles.cell_value(line, weekColumn)).split(" ")
 
             # Et on attribu le chiffre au nom de groupe et la lettre
             # au frGroup (="groupe de francais")
