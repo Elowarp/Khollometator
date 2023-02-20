@@ -1,8 +1,10 @@
 import os
 import discord
+from discord import app_commands
 from discord.ext import commands
 import khollometre
 from dotenv import load_dotenv
+import gc
 
 load_dotenv()
 
@@ -25,16 +27,20 @@ class Messager(commands.Bot):
         # Définission du mode debug ou non en fonction du .env
         self.debug = True if debug == "True" else False
 
+
         self.khollometreMP2I = khollometre.Collometre(classe="MP2I", file="MP2I.xls", debug=self.debug)
         self.khollometreMPI = khollometre.Collometre(classe="MPI", file="MPI.xls", debug=self.debug)
-
 
     async def on_ready(self):
         """
         Quand le bot est pret alors on lance une annonce dans le channel
         voulu, sert à debug, on changera après
         """
-        print("Bot is ready, is debug mode ? : {}".format(self.debug))
+        self.tree.add_command(self.messageEveryone)
+        self.add_command(sync)
+        self.tree.copy_global_to(guild=discord.Object(id=self.Serv_id))
+
+        print("Bot is ready, is debug mode ? : {}".format(self.debug))  
         status = "https://github.com/Elowarp/Kollometator  by LOGIC & Elowarp"
 
         if self.debug:
@@ -42,48 +48,35 @@ class Messager(commands.Bot):
 
         await self.change_presence(activity=discord.Game(name=status))
 
-
-    async def on_message(self, message):
+    @app_commands.command(name = "khollotime", 
+        description = "Envoyer les kholles à toutes les classes")
+    async def messageEveryone(self, interaction, week:str=None, debug:str=None):
         """
-        Quand le bot détecte un message du serveur, il regarde le channel 
-        et si c'est une commande connue, si c'est le cas, il exécute le 
-        programme correspondant (soit envoyer une annonce de kholle)
+        Fonction envoyant le khollomètre dans le channel annonce de tout le monde
         """
-        # Si on fait la commande weekannounce dans le channel test
-        # On envoie un message aux MPI et MP2I
-        if "weekannounce" in message.content \
-            and message.channel.id == self.Test_id:
-
-            # Si on est en mode debug alors qu'on ne doit pas
-            # on passe le mode debug à False
-            # (c'est pour annuler le "debug" dans la commande d'avant
-            # si jamais)
-            if self.debug and DEBUG != "True":
-                self.debug = False
-            
-            if len(message.content.split(" ")) >= 2:
-                # Récupération de la date précise
-                week = message.content.split(" ")[1]
-
-                if (len(message.content.split(" ")) >= 3):
-                    if message.content.split(" ")[2] == "debug":
-                        self.debug = True
-                
-
-                # Assignation de la date aux khollomètres pour obtenir les bonnes données
-                self.khollometreMP2I.set_week(week)
-                self.khollometreMPI.set_week(week)
-
-            
-            else:
-                # Mise à jour de la semaine de kholle voulue
-                self.khollometreMP2I.update_date()
-                self.khollometreMPI.update_date()
-
-            await self.messageMP2I()
-            await self.messageMPI()
-            await self.messageMPI_Bonus()
+        # Si on est en mode debug alors qu'on ne doit pas
+        # on passe le mode debug à False
+        # (c'est pour annuler le "debug" dans la commande d'avant
+        # si jamais)
+        if self.debug and DEBUG != "True":
+            self.debug = False
         
+        if debug != "true":
+            self.debug = True
+
+        if week != "None":
+            # Assignation de la date aux khollomètres pour obtenir les bonnes données
+            self.khollometreMP2I.set_week(week)
+            self.khollometreMPI.set_week(week)     
+        
+        else:
+            # Mise à jour de la semaine de kholle voulue
+            self.khollometreMP2I.update_date()
+            self.khollometreMPI.update_date()
+
+        await self.messageMP2I()
+        await self.messageMPI()
+        await self.messageMPI_Bonus()
 
     async def messageMP2I(self):
         """
@@ -138,6 +131,23 @@ class Messager(commands.Bot):
         # On envoie un message pour chaque élément du tuple
         for i in range(len(list_messages)):
             await self.get_guild(self.Serv_id).get_thread(announce_channel).send(list_messages[i])
+
+
+@commands.command(name="sync")
+async def sync(self, interaction: discord.Interaction=None):
+    print("syncing commands...")
+    messager = None
+    
+    for obj in gc.get_objects():
+        if isinstance(obj, Messager):
+            messager = obj
+
+    app_commands.CommandTree.clear_commands(self, guild=discord.Object(id=Messager.Serv_id))
+    await commands.CommandTree.sync()
+    print("adding commands")
+    app_commands.CommandTree.add_command(messager.messageEveryone)
+    await app_commands.CommandTree.sync()
+    print("commands synced")
 
 if __name__ == "__main__":
     messager = Messager(debug=DEBUG)
