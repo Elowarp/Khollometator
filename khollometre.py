@@ -277,7 +277,7 @@ class Collometre:
             # Ajout des mentions des personnes du groupe sous forme 
             # "@machin@truc" s'il y a bien des personnes à mentionner
             if group in self.students and not self.debug:
-                groupTags = "".join(["<@{}>".format(self.students[group][i]) 
+                groupTags = "".join(["<@{}> ".format(self.students[group][i]) 
                     for i in range(len(self.students[group]))])
 
                 currentGroupMessage += groupTags 
