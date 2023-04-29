@@ -19,9 +19,8 @@ class Collometre:
         # Les numéros des colonnes qui contiennent les différentes informations
         self.subjectsColumn = 0
         self.teachersColumn = 1
-        self.infosColumn = 2
-        self.horariesColumn = 3
-        self.classColumn = 4
+        self.horariesColumn = 2
+        self.classColumn = 3
 
 
         # Dictionnaire contenant toutes les infos des kholles triées par groupe
@@ -152,7 +151,6 @@ class Collometre:
         """
         subject =   str(self.colles.cell_value(line, self.subjectsColumn))
         teacher =   str(self.colles.cell_value(line, self.teachersColumn))
-        infos =     str(self.colles.cell_value(line, self.infosColumn))
         horaries =  str(self.colles.cell_value(line, self.horariesColumn))
         classe =    str(self.colles.cell_value(line, self.classColumn))
         group =     self.colles.cell_value(line, weekColumn)
@@ -184,7 +182,6 @@ class Collometre:
         kholleInfos = {
             "subject": subject,
             "teacher": teacher,
-            "infos": infos,
             "horaries": horaries,
             "class": classe,
             "frGroup": frGroup
