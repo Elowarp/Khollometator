@@ -172,6 +172,7 @@ class Collometre:
 
             # Et on attribu le chiffre au nom de groupe et la lettre
             # au frGroup (="groupe de francais")
+            print(groupInfo)
             frGroup = groupInfo[1]
             group = int(groupInfo[0])
 
