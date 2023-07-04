@@ -1,26 +1,23 @@
 from calendar import weekday
 from datetime import date, datetime, timedelta
-import xlrd
+import csv
 
-class Collometre:
+import logging
 
-    def __init__(self, classe="MP2I", file="MP2I.xls", debug=True):
+LOG_FILENAME = "khollometre.log"
+logging.basicConfig(format='%(asctime)s %(message)s', 
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    filename=LOG_FILENAME, level=logging.DEBUG)
+
+class Khollometre:
+    def __init__(self, classe="MP2I", file="MP2I.csv", debug=True):
         # Défini si on est en production ou non
         self.debug = debug
     
         # Récupération des informations depuis le fichier excel
-        self.doc=xlrd.open_workbook(file)
-        self.colles = self.doc.sheet_by_index(0)
-
-        # Zone où se trouvent tout les groupes de kholles
-        self.firstGroupCell = (2, 5)
-        self.lastGroupCell = (self.colles.nrows - 1, self.colles.ncols - 1)
-
-        # Les numéros des colonnes qui contiennent les différentes informations
-        self.subjectsColumn = 0
-        self.teachersColumn = 1
-        self.horariesColumn = 2
-        self.classColumn = 3
+        with open(file, newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            self.kholles = list(reader)
 
 
         # Dictionnaire contenant toutes les infos des kholles triées par groupe
@@ -34,7 +31,7 @@ class Collometre:
         #               subject: "Physique",
         #               horaries: "Me 12-13",
         #               class: "S300",
-        #               frGroup: "" # Lettre correspondant à celui qui passe en fr
+        #               frGroup: "a" # Lettre correspondant à celui qui passe en fr
         #           }
         #       ]        
         # }
@@ -47,7 +44,7 @@ class Collometre:
         self.week = self._get_current_week()
 
         # Récupération des id des étudiants et de leurs groupes
-        self.students = self._get_students_id_and_groups_from_xls(file="pings.xls")
+        self.students = self._get_students_id_and_groups_from_csv(file="pings.csv")
 
     def update_date(self):
         """
@@ -59,35 +56,35 @@ class Collometre:
 
         self.week = self._get_current_week()
 
-    def _get_students_id_and_groups_from_xls(self, file="pings.xls") -> dict:
+    def _get_students_id_and_groups_from_csv(self, file="pings.csv") -> dict:
         """
         Fonction qui récupère les groupes et les id des étudiants
-        depuis le fichier excel pings.xls
+        depuis le fichier excel pings.csv
 
         Parameters : None
         Returns : dict - Dictionnaire contenant les groupes et les id des étudiants
         """
         # Récupération des informations depuis le fichier excel
-        doc = xlrd.open_workbook(file)
-        tableur = doc.sheet_by_index(0)
+        with open(file, newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            students = list(reader)
 
         # Stockage des id en fonction du groupe de kholle
         students = {
             # groupNumber : [id1, id2, id3, ...],
         }
 
-        # On parcourt le tableau ligne par ligne
-        for i in range(1, tableur.nrows):
-            # On vérifie si la ligne contient les infos d'un étudiant de la classe
-            # cherchée
-            if str(tableur.cell_value(i, 3)) == self.classe:
-                groupNumber = int(tableur.cell_value(i, 0)) # Numéro du groupe
+        # On parcourt les étudiants
+        for student in students:
+            # On récupère le groupe de l'étudiant
+            group = student["Groupe"]
 
-                # Ajout dans le dictionnaire
-                if groupNumber not in students:
-                    students[groupNumber] = []
+            # Si le groupe n'existe pas dans le dictionnaire, on l'ajoute
+            if group not in students:
+                students[group] = []
 
-                students[groupNumber].append(str(tableur.cell_value(i, 2)))
+            # On ajoute l'id de l'étudiant dans le groupe correspondant
+            students[group].append(student["ID"])
 
         return students
 
@@ -125,57 +122,46 @@ class Collometre:
         """
         self.week = week   
 
-    def _get_column_from_week(self) -> int:
-        """
-        Récupère la date du prochain lundi et renvoie l'index de la colonne
-        correspondante à cette semaine
-        """
-
-        nextMonday = self.week
-
-        # On a (1, ..) car la ligne des dates est la 2nd ligne donc pas 
-        # besoin de parcourir tout le tableau
-        for idColonne in range(self.colles.ncols):
-            if str(self.colles.cell_value(1, idColonne)) == nextMonday:
-                return idColonne
-
-    def _add_kholle_info_to_group(self, line, weekColumn) -> None:
+    def _add_kholle_info_to_group(self, line) -> None:
         """
         Ajout des informations d'une ligne dans le dictionnaire d'informations
 
         Parameters:
             line (int): Ligne que l'on traite
-            weekColumn (int) : Colonne de la semaine actuelle
 
         Returns : None
         """
-        subject =   str(self.colles.cell_value(line, self.subjectsColumn))
-        teacher =   str(self.colles.cell_value(line, self.teachersColumn))
-        horaries =  str(self.colles.cell_value(line, self.horariesColumn))
-        classe =    str(self.colles.cell_value(line, self.classColumn))
-        group =     self.colles.cell_value(line, weekColumn)
-        frGroup =   None
+        subject     = line["Matière"]
+        teacher     = line["Kholleur/se"]
+        horaries    = line["Créneaux"]
+        classe      = line["Salles"]
+        group       = line[self.week]
+        frGroup     = None
 
-        # Si on a un saut de ligne dans le fichier
-        if group == "" or group == " ": return
-
-        # Distingo entre le nom de groupe "5" et "5 a"
+        # Si le kholleur n'a pas de kholle cette semaine, on passe à la suivante
+        if group == "":
+            return None
+        
+        # On essaye de convertir le groupe en entier
         try:
-            # On essaye de convertir "5" en int
             group = int(group)
         
         # Si on ne peut pas, c'est qu'on essaye de convertir "5 a" en entier 
         # or c'est impossible car illogique
         except ValueError:
             # Donc on découpe le string en deux au niveau de l'espace
-            groupInfo = str(self.colles.cell_value(line, weekColumn)).split(" ")
+            groupInfo = group.split(" ")
 
             # Et on attribu le chiffre au nom de groupe et la lettre
-            # au frGroup (="groupe de francais")
-            print(groupInfo)
+            # au frGroup (='a' ou 'b' ou 'c')
             frGroup = groupInfo[1]
             group = int(groupInfo[0])
 
+        except Exception as e:
+            logging.error("Erreur lors de la conversion du groupe en entier")
+            logging.exception(e)
+            return None
+        
         # Si le groupe de kholle n'a toujours pas été ajouté au dico
         if group not in self.khollesByGroup:
             self.khollesByGroup[group] = []
@@ -236,19 +222,34 @@ class Collometre:
             # On prend le timestamp du premier lundi de la semaine, on lui
             # ajoute le nb de jours correspondant pour atteindre le jour voulu
             # et ainsi pour l'heure et les minutes
-            firstDate = nextMondayTimestamp.timestamp() + days[date[0]] * nbSecondsInDay + int(date[1].split("h")[0])*nbSecondsInHour + minutes
-            secondDate = nextMondayTimestamp.timestamp() + days[date[0]] * nbSecondsInDay + int(date[1].split("h")[1])*nbSecondsInHour + minutes
+            firstDate = nextMondayTimestamp.timestamp() + days[date[0]]\
+                * nbSecondsInDay + int(date[1].split("h")[0])*nbSecondsInHour\
+                + minutes
+            
+            secondDate = nextMondayTimestamp.timestamp() + days[date[0]]\
+                * nbSecondsInDay + int(date[1].split("h")[1])*nbSecondsInHour\
+                + minutes
 
         else:
             # On prend le timestamp du premier lundi de la semaine, on lui
             # ajoute le nb de jours correspondant pour atteindre le jour voulu
             # et ainsi pour l'heure
-            firstDate = nextMondayTimestamp.timestamp() + days[date[0]] * nbSecondsInDay + int(date[1].split("-")[0])*nbSecondsInHour 
-            secondDate = nextMondayTimestamp.timestamp() + days[date[0]] * nbSecondsInDay + int(date[1].split("-")[1])*nbSecondsInHour
+            firstDate = nextMondayTimestamp.timestamp() + days[date[0]]\
+                * nbSecondsInDay + int(date[1].split("-")[0])*nbSecondsInHour 
+            secondDate = nextMondayTimestamp.timestamp() + days[date[0]]\
+                * nbSecondsInDay + int(date[1].split("-")[1])*nbSecondsInHour
 
         # Tuple contenant le debut de l'heure et la fin de l'heure
         return (int(firstDate), int(secondDate))
 
+    def set_debug(self, debug):
+        """
+        Fonction qui permet de changer le mode debug
+
+        Parameters : debug (bool)
+        Returns : None
+        """
+        self.debug = debug
 
     def weeklySummup(self) -> list:
         """
@@ -261,9 +262,9 @@ class Collometre:
         # Mise à jour des informations
         self.main()
         
-        finalMessage = ["wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n_ _".format(
-            self.week
-        )]
+        finalMessage = [
+            "wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n".format(self.week)
+        ]
 
         # Triage des kholles selon l'ordre croissant des groupes
         self.sort_kholles()
@@ -315,16 +316,14 @@ class Collometre:
 
         Parameters : None
         Returns : None
-        """
-        weekColumn = self._get_column_from_week()
-        
+        """        
         self.khollesByGroup = {} # Reset des kholles
 
-        for line in range(self.firstGroupCell[0], self.lastGroupCell[0]+1):
-            self._add_kholle_info_to_group(line, weekColumn)
+        for line in self.kholles:
+            self._add_kholle_info_to_group(line)
 
 
 if __name__ == "__main__":
-    collometrique = Collometre(classe="MP2I", file="MPI.xls", debug=True)
-    collometrique.set_week("07-11")
+    collometrique = Khollometre(classe="MP2I", file="MP2I.csv", debug=True)
+    collometrique.set_week("01-05")
     print(collometrique.weeklySummup())
