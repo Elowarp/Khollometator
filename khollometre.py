@@ -4,6 +4,7 @@ import csv
 
 import logging
 
+# Logging
 LOG_FILENAME = "khollometre.log"
 logging.basicConfig(format='%(asctime)s %(message)s', 
                     datefmt='%m/%d/%Y %H:%M:%S',
@@ -14,7 +15,7 @@ class Khollometre:
         # Défini si on est en production ou non
         self.debug = debug
     
-        # Récupération des informations depuis le fichier excel
+        # Récupération des informations depuis le fichier csv
         with open(file, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=';')
             self.kholles = list(reader)
