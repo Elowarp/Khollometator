@@ -31,8 +31,8 @@ def send_message(message, url=MP2I_webhook_url):
 
 
 if __name__ == "__main__":
-    kholloMP2I = Khollometre(classe="MP2I", file="MP2I.csv", debug=True)
-    kholloMPI = Khollometre(classe="MPI", file="MPI.csv", debug=True)
+    kholloMP2I = Khollometre(classe="MP2I", file="MP2I.csv", debug=False)
+    kholloMPI = Khollometre(classe="MPI", file="MPI.csv", debug=False)
 
 
     # Récupération des messages

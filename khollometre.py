@@ -71,23 +71,23 @@ class Khollometre:
             students = list(reader)
 
         # Stockage des id en fonction du groupe de kholle
-        students = {
+        groups = {
             # groupNumber : [id1, id2, id3, ...],
         }
 
         # On parcourt les étudiants
         for student in students:
             # On récupère le groupe de l'étudiant
-            group = student["Groupe"]
+            group = int(student["Groupe"])
 
             # Si le groupe n'existe pas dans le dictionnaire, on l'ajoute
-            if group not in students:
-                students[group] = []
+            if group not in groups:
+                groups[group] = []
 
             # On ajoute l'id de l'étudiant dans le groupe correspondant
-            students[group].append(student["ID"])
+            groups[group].append(int(student["ID"]))
 
-        return students
+        return groups
 
     def _get_current_week(self) -> int:
         """
@@ -275,7 +275,7 @@ class Khollometre:
             currentGroupMessage = "<:e:999621115406205029> **Groupe {}** : ".format(group)
 
             # Ajout des mentions des personnes du groupe sous forme 
-            # "@machin@truc" s'il y a bien des personnes à mentionner
+            # "@machin @truc" s'il y a bien des personnes à mentionner
             if group in self.students and not self.debug:
                 groupTags = "".join(["<@{}> ".format(self.students[group][i]) 
                     for i in range(len(self.students[group]))])
@@ -325,6 +325,6 @@ class Khollometre:
 
 
 if __name__ == "__main__":
-    collometrique = Khollometre(classe="MP2I", file="MP2I.csv", debug=True)
+    collometrique = Khollometre(classe="MP2I", file="MP2I.csv", debug=False)
     collometrique.set_week("01-05")
     print(collometrique.weeklySummup())
