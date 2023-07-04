@@ -8,7 +8,7 @@ from khollometre import Khollometre
 # Récupération des variables d'environnement
 dotenv.load_dotenv()
 MP2I_webhook_url = os.getenv("MP2I_webhook_url")
-MPI_webhook_url = os.getenv("MP2I_webhook_url")
+MPI_webhook_url = os.getenv("MPI_webhook_url")
 
 
 # Logging
@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s %(message)s',
                     filename=LOG_FILENAME, level=logging.DEBUG)
 
 # Constantes
-ERROR_MESSAGE = ":warning: __Il y a un problème avec le khollomètre !__ Veillez prévenir **Elowan** !"
+ERROR_MESSAGE = ":warning: __Il y a un problème avec le khollomètre !__ Veuillez prévenir **Elowan** !"
 
 
 def send_message(message, url=MP2I_webhook_url):
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     try:
         messagesMPI = kholloMPI.weeklySummup()
-        
+
     except Exception as e:
         messagesMPI = [ERROR_MESSAGE]
         logging.error("MPI ERROR")
