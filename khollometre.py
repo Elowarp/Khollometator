@@ -81,8 +81,6 @@ class Khollometre:
             # On récupère le groupe de l'étudiant
             group = int(student["Groupe"])
 
-            print(student)
-
             # Si l'étudiant n'est pas dans la classe, 
             # on passe à l'étudiant suivant
             if student["Classe"] != self.classe:

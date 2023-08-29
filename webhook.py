@@ -18,7 +18,9 @@ logging.basicConfig(format='%(asctime)s %(message)s',
                     filename=LOG_FILENAME, level=logging.DEBUG)
 
 # Constantes
-ERROR_MESSAGE = ":warning: __Il y a un problème avec le khollomètre !__ Veuillez prévenir **<@240850328180883457>** !"
+ERROR_MESSAGE = ":warning: __Il y a un problème avec le khollomètre !__ \
+Référez vous à votre khollomètre sur votre cdp/agenda et veuillez \
+prévenir **<@240850328180883457>** !"
 
 
 def send_message(message, url=MP2I_webhook_url):
