@@ -63,7 +63,8 @@ class Khollometre:
         depuis le fichier excel pings.csv
 
         Parameters : None
-        Returns : dict - Dictionnaire contenant les groupes et les id des étudiants
+        Returns : dict - Dictionnaire contenant les groupes et les 
+                         id des étudiants
         """
         # Récupération des informations depuis le fichier excel
         with open(file, newline='') as csvfile:
@@ -80,6 +81,13 @@ class Khollometre:
             # On récupère le groupe de l'étudiant
             group = int(student["Groupe"])
 
+            print(student)
+
+            # Si l'étudiant n'est pas dans la classe, 
+            # on passe à l'étudiant suivant
+            if student["Classe"] != self.classe:
+                continue
+
             # Si le groupe n'existe pas dans le dictionnaire, on l'ajoute
             if group not in groups:
                 groups[group] = []
@@ -91,7 +99,8 @@ class Khollometre:
 
     def _get_current_week(self) -> int:
         """
-        Récupère le lundi de la semaine prochaine et le renvoie sout forme jj-mm
+        Récupère le lundi de la semaine prochaine et le renvoie sous
+        la forme jj-mm
 
         Parameters: None
         
@@ -139,7 +148,8 @@ class Khollometre:
         group       = line[self.week]
         frGroup     = None
 
-        # Si le kholleur n'a pas de kholle cette semaine, on passe à la suivante
+        # Si le kholleur n'a pas de kholle cette semaine, 
+        # on passe à la suivante
         if group == "":
             return None
         
@@ -254,8 +264,8 @@ class Khollometre:
 
     def weeklySummup(self) -> list:
         """
-        Fonction qui retourne le message à afficher aux élèves sous forme de liste
-        de phrases/blocs à afficher
+        Fonction qui retourne le message à afficher aux élèves 
+        sous forme de liste de phrases/blocs à afficher
 
         Parameters : None
         Returns : list

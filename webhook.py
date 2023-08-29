@@ -31,6 +31,7 @@ def send_message(message, url=MP2I_webhook_url):
 
 
 if __name__ == "__main__":
+    logging.info("--- Starting khollometre ---")
     kholloMP2I = Khollometre(classe="MP2I", file="MP2I.csv", debug=False)
     kholloMPI = Khollometre(classe="MPI", file="MPI.csv", debug=False)
 
@@ -60,3 +61,5 @@ if __name__ == "__main__":
 
     for message in messagesMPI:
         send_message(message, url=MPI_webhook_url)
+
+    logging.info("--- Job Done ---")
