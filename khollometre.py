@@ -272,7 +272,7 @@ class Khollometre:
         self.main()
         
         finalMessage = [
-            "wsh les prépas, c'est l'heure du collométrage de la semaine du **{}** WOUHOU\n".format(self.week)
+            "wsh les prépas, c'est l'heure du khollomètre de la semaine du **{}** WOUHOU\n".format(self.week)
         ]
 
         # Triage des kholles selon l'ordre croissant des groupes
@@ -316,7 +316,7 @@ class Khollometre:
 
             finalMessage.append(currentGroupMessage)
 
-        finalMessage.append("⚠️ Coquilles possibles ! *(comme Noyer avec ses transparents)*")
+        finalMessage.append("⚠️ Coquilles possibles ! *(comme M.Noyer avec ses transparents)*")
         return finalMessage
 
     def main(self) -> None:
