@@ -9,7 +9,7 @@ from khollometre import Khollometre
 dotenv.load_dotenv()
 MP2I_webhook_url = os.getenv("MP2I_webhook_url")
 MPI_webhook_url = os.getenv("MPI_webhook_url")
-
+DEBUG = True if os.getenv("DEBUG")=="TRUE" else False
 
 # Logging
 LOG_FILENAME = "khollometre.log"
@@ -34,9 +34,8 @@ def send_message(message, url=MP2I_webhook_url):
 
 if __name__ == "__main__":
     logging.info("--- Starting khollometre ---")
-    kholloMP2I = Khollometre(classe="MP2I", file="MP2I.csv", debug=False)
-    kholloMPI = Khollometre(classe="MPI", file="MPI.csv", debug=False)
-
+    kholloMP2I = Khollometre(classe="MP2I", file="MP2I.csv", debug=DEBUG)
+    kholloMPI = Khollometre(classe="MPI", file="MPI.csv", debug=DEBUG)
 
     # Récupération des messages
     try:

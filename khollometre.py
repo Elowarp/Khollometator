@@ -334,5 +334,5 @@ class Khollometre:
 
 if __name__ == "__main__":
     collometrique = Khollometre(classe="MP2I", file="MP2I.csv", debug=False)
-    collometrique.set_week("01-05")
+    collometrique.set_week("05-02")
     print(collometrique.weeklySummup())
