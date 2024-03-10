@@ -1,16 +1,20 @@
 # Khollométator
 
+Bot discord python affichant toutes les semaines les prochaines kholles des classes de MP2I et MPI en fonction de fichier tableur mis sous une certaine forme. Il mentionne les personnes concernées pour chaque groupe de kholle, selon le fichier `pings.csv`
+
 ## Installation
 
 Première utilisation :
 
 ```bash
-python3.10 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 Fichier contenant les infos critiques : .env
+
+Exemple de fichier .env :
 
 ```text
 MP2I_webhook_url=https://discord.com/api/webhooks/.../...?thread_id=...
