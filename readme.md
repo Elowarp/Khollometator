@@ -26,7 +26,7 @@ MPI_webhook_url=https://discord.com/api/webhooks/.../...?thread_id=...
 Pour les kholles :
 
 ```csv
-Matière;Kholleur/se;Infos Kholleur/se;Créneaux;Salles;06-09;...;27-06
+Matière;Kholleur/se;Créneaux;Salles;06-09;...;27-06
 ```
 
 Avec les 06-02, ..., 27-03 les dates des lundis de chaque semaine où il y a une khôlle.
